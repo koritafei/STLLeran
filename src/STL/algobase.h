@@ -3,8 +3,8 @@
  * Version      : 1.0
  * Author       : koritafei(koritafei@gmailcom)
  * Date         : 2021-04-21 17:20:24
- * LastEditors  : koritafei(koritafei@gmailcom)
- * LastEditTime : 2021-04-23 12:23:32
+ * LastEditors  : koritafei(koritafei@gmail.com)
+ * LastEditTime : 2021-05-06 11:24:24
  * FilePath     : /STLLearn/src/STL/algobase.h
  * Copyright (C) 2021 koritafei(koritafei@gmailcom). All rights reserved.
  *************************************************************************************/
@@ -123,6 +123,81 @@ unchecked_copy(Tp* first, Tp* last, Up* result) {
 template <class InputIter, class OutputIter>
 OutputIter copy(InputIter first, InputIter last, OutputIter result) {
   return unchecked_copy(first, last, result);
+}
+
+/*****************************************************************************************/
+// copy_backward
+// 将 [first, last)区间内的元素拷贝到 [result - (last - first), result)内
+/*****************************************************************************************/
+// unchecked_copy_backward_cat 的 bidirectional_iterator_tag 版本
+template <class BidirectionalIter1, class BidirectionalIter2>
+BidirectionalIter2 unchecked_copy_backward_cat(
+    BidirectionalIter1 first,
+    BidirectionalIter1 last,
+    BidirectionalIter2 result,
+    mystl::bidirectional_iterator_tag) {
+  while (first != last)
+    *--result = *--last;
+  return result;
+}
+
+// unchecked_copy_backward_cat 的 random_access_iterator_tag 版本
+template <class BidirectionalIter1, class BidirectionalIter2>
+BidirectionalIter2 unchecked_copy_backward_cat(
+    BidirectionalIter1 first,
+    BidirectionalIter1 last,
+    BidirectionalIter2 result,
+    mystl::random_access_iterator_tag) {
+  for (auto n = last - first; n > 0; --n)
+    *--result = *--last;
+  return result;
+}
+
+template <class BidirectionalIter1, class BidirectionalIter2>
+BidirectionalIter2 unchecked_copy_backward(BidirectionalIter1 first,
+                                           BidirectionalIter1 last,
+                                           BidirectionalIter2 result) {
+  return unchecked_copy_backward_cat(first,
+                                     last,
+                                     result,
+                                     iterator_category(first));
+}
+
+// 为 trivially_copy_assignable 类型提供特化版本
+template <class Tp, class Up>
+typename std::enable_if<
+    std::is_same<typename std::remove_const<Tp>::type, Up>::value &&
+        std::is_trivially_copy_assignable<Up>::value,
+    Up*>::type
+unchecked_copy_backward(Tp* first, Tp* last, Up* result) {
+  const auto n = static_cast<size_t>(last - first);
+  if (n != 0) {
+    result -= n;
+    std::memmove(result, first, n * sizeof(Up));
+  }
+  return result;
+}
+
+template <class BidirectionalIter1, class BidirectionalIter2>
+BidirectionalIter2 copy_backward(BidirectionalIter1 first,
+                                 BidirectionalIter1 last,
+                                 BidirectionalIter2 result) {
+  return unchecked_copy_backward(first, last, result);
+}
+
+/*****************************************************************************************/
+// copy_if
+// 把[first, last)内满足一元操作 unary_pred 的元素拷贝到以 result 为起始的位置上
+/*****************************************************************************************/
+template <class InputIter, class OutputIter, class UnaryPredicate>
+OutputIter copy_if(InputIter      first,
+                   InputIter      last,
+                   OutputIter     result,
+                   UnaryPredicate unary_pred) {
+  for (; first != last; ++first) {
+    if (unary_pred(*first)) *result++ = *first;
+  }
+  return result;
 }
 
 /*****************************************************************************************/

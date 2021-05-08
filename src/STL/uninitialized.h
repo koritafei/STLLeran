@@ -3,8 +3,8 @@
  * Version      : 1.0
  * Author       : koritafei(koritafei@gmailcom)
  * Date         : 2021-04-21 17:20:40
- * LastEditors  : koritafei(koritafei@gmailcom)
- * LastEditTime : 2021-04-23 14:46:23
+ * LastEditors  : koritafei(koritafei@gmail.com)
+ * LastEditTime : 2021-05-07 13:23:52
  * FilePath     : /STLLearn/src/STL/uninitialized.h
  * Copyright (C) 2021 koritafei(koritafei@gmailcom). All rights reserved.
  *************************************************************************************/
@@ -62,6 +62,18 @@ template <class InputIter, class ForwardIter>
 ForwardIter unchecked_uninit_copy(InputIter   first,
                                   InputIter   last,
                                   ForwardIter result) {
+  return Mystl::unchecked_uninit_copy(
+      first,
+      last,
+      result,
+      std::is_trivially_copy_assignable<
+          typename iterator_traits<ForwardIter>::value_type>{});
+}
+
+template <class InputIter, class ForwardIter>
+ForwardIter uninitialized_copy(InputIter   first,
+                               InputIter   last,
+                               ForwardIter result) {
   return Mystl::unchecked_uninit_copy(
       first,
       last,
@@ -158,6 +170,45 @@ void unchecked_uninit_fill(ForwardIter first,
   Mystl::unchecked_uninit_fill(
       first,
       last,
+      value,
+      std::is_trivially_copy_assignable<
+          typename iterator_traits<ForwardIter>::value_type>{});
+}
+
+/*****************************************************************************************/
+// uninitialized_fill_n
+// 从 first 位置开始，填充 n 个元素值，返回填充结束的位置
+/*****************************************************************************************/
+template <class ForwardIter, class Size, class T>
+ForwardIter unchecked_uninit_fill_n(ForwardIter first,
+                                    Size        n,
+                                    const T&    value,
+                                    std::true_type) {
+  return Mystl::fill_n(first, n, value);
+}
+
+template <class ForwardIter, class Size, class T>
+ForwardIter unchecked_uninit_fill_n(ForwardIter first,
+                                    Size        n,
+                                    const T&    value,
+                                    std::false_type) {
+  auto cur = first;
+  try {
+    for (; n > 0; --n, ++cur) {
+      Mystl::construct(&*cur, value);
+    }
+  } catch (...) {
+    for (; first != cur; ++first)
+      Mystl::destroy(&*first);
+  }
+  return cur;
+}
+
+template <class ForwardIter, class Size, class T>
+ForwardIter uninitialized_fill_n(ForwardIter first, Size n, const T& value) {
+  return Mystl::unchecked_uninit_fill_n(
+      first,
+      n,
       value,
       std::is_trivially_copy_assignable<
           typename iterator_traits<ForwardIter>::value_type>{});
