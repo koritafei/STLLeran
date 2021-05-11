@@ -135,7 +135,7 @@ BidirectionalIter2 unchecked_copy_backward_cat(
     BidirectionalIter1 first,
     BidirectionalIter1 last,
     BidirectionalIter2 result,
-    mystl::bidirectional_iterator_tag) {
+    Mystl::bidirectional_iterator_tag) {
   while (first != last)
     *--result = *--last;
   return result;
@@ -147,7 +147,7 @@ BidirectionalIter2 unchecked_copy_backward_cat(
     BidirectionalIter1 first,
     BidirectionalIter1 last,
     BidirectionalIter2 result,
-    mystl::random_access_iterator_tag) {
+    Mystl::random_access_iterator_tag) {
   for (auto n = last - first; n > 0; --n)
     *--result = *--last;
   return result;
